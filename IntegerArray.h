@@ -1,5 +1,6 @@
 #pragma once
 #include <iostream>
+#include <exception>
 
 class IntegerArray
 {
@@ -7,71 +8,86 @@ private:
     int m_length; //длина контейнера
     int* m_data{}; //начало контейнера
 public:
+
+	class BadRange : public std::exception 	//Исключение выхода индекса за диапазон
+	{
+	public:
+		virtual const char* what() const noexcept override
+		{
+			return "ERROR: Индекс вышел за диапазон значений";
+		}
+	};
+
+	class BadLength : public std::exception //Исключение выхода длины контейнера за диапазон
+	{
+	public:
+		virtual const char* what() const noexcept override
+		{
+			return "ERROR: Направильно указана длина контейнера";
+		}
+	};
     
     IntegerArray() = default;
-
-	void printInfo(int length)
+    
+	IntegerArray(int length) : m_length(length) //Конструктор(создание контейнера)
 	{
-		std::cout << "m_data(" << m_data << ")" << std::endl;
-		for (int i = 0; i < length; i++)
+		if (length <= 0)
 		{
-			std::cout << "m_data[" << i << "] = " << m_data[i] << std::endl;
+			throw BadLength();
+		}
+		else 
+		{
+			m_data = new int[length] {};
+		}
+	}	
+
+	void printItems() //Распечатать содержимое контейнера
+	{
+		std::cout << std::endl << "Адрес контейнера(" << m_data << ")" << std::endl;
+		for (int i = 0; i < this->m_length; i++)
+		{
+			std::cout << "m_data[" << i << "] = " << this->m_data[i] << std::endl;
 		}
 		std::cout << std::endl;
 	}
 
-    //Конструктор(создание контейнера)
-	IntegerArray(int length) : m_length(length)
-	{
-		if (length > 0)
-		{
-			m_data = new int[length] {};
-			for (int i = 0; i < length; i++)
-			{
-				m_data[i] = rand();
-			}
-			std::cout << "Constructor" << std::endl;
-			printInfo(length);
-		}
-	}	
-
-    //Удаление контейнера
-	~IntegerArray()
+	~IntegerArray() //Удаление контейнера
 	{
 		delete[] m_data;
 	}
 
-	//Получить длину контейнера
-	int getLength() const;
+	int getLength() const; //Получить длину контейнера
 
-	//Скопировать контейнер
-	IntegerArray* copyContain();
+	IntegerArray* copyContain();	//Скопировать контейнер
 
-	//Получить элемент контейнера по индексу
-	int getItem(int index);
+	int getItem(int index);	//Получить элемент контейнера по индексу
 
-	//Вставить новый элемент в конец контейнера
-	void addItem(int value);
+	void setItem(int index, int value);	//Изменить элемент контейнера по индексу
 
-	//Вставляем новый элемент в определеное место
-	void insertItem(int value, int index);
+	void insertStartItem(int value); //Вставить новый элемент в конец контейнера
 
-	//Поиск индекса элелемента по его значению(возвращает первый попавшийся, если не находит, возвращает -1)
-	int findItem(int itemValue);
+	void insertEndItem(int value); //Вставить новый элемент в конец контейнера
 
-    //Удаление элемента с контейнера
-	void deleteItem(int index);
+	void insertItem(int index, int value); //Вставляем новый элемент в определеное место
 
-	//Изменить размер контейнера
-	void changeSize(int newLength);
+	int findItem(int itemValue); //Поиск индекса элелемента по его значению(возвращает первый попавшийся, если не находит, возвращает -1)
 
-	//Отчищаем контейнер
-	void eraseCont();
-	
-	//Перегружаем оператор []
-	int& operator[](int index)
+	void removeItem(int index); //Удаление элемента с контейнера
+
+	void changeSize(int newLength); 
+
+	void eraseCont();//Отчищаем контейнер
+
+	int& operator[](int index) //Перегружаем оператор []
 	{
-		return m_data[index];
+		if (index >= 0 && index < m_length)
+		{
+			throw BadRange();
+		}
+		else
+		{
+			return m_data[index];
+		}
 	}
 };
 

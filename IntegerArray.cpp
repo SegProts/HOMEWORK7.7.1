@@ -1,33 +1,65 @@
 #include "IntegerArray.h"
 
-//Получить длину контейнера
-int IntegerArray::getLength() const 
+int IntegerArray::getLength() const //Получить длину контейнера
 { 
 	return m_length; 
 }
 
-//Скопировать контейнер
-IntegerArray* IntegerArray::copyContain()
+IntegerArray* IntegerArray::copyContain() //Скопировать контейнер
 {
-	std::cout << "copyContain" << std::endl;
-	IntegerArray copyArray(m_length);
-	for (int i = 0; i < m_length; i++)
+	IntegerArray *copyArray = new IntegerArray(m_length);
+	for (int i = 0; i < copyArray->m_length; i++)
 	{
-		copyArray[i] = 1;
-		std::cout << copyArray[i] << std::endl;
+		copyArray->m_data[i] = m_data[i];
+	}
+	return copyArray;
+}
+
+int IntegerArray::getItem(int index) //Получаем значение элемента по индексу
+{
+	if (index < 0 || index > m_length)
+	{
+		throw BadRange();
+	}
+	else
+	{
+		return m_data[index];
+	}
+}
+
+void IntegerArray::setItem(int index, int value) //Изменить элемент контейнера по индексу
+{
+	if (index < 0 || index > m_length)
+	{
+		throw BadRange();
+	}
+	else
+	{
+		m_data[index] = value;
+	}
+}
+
+void IntegerArray::insertStartItem(int value) //Вставить новый элемент в начало контейнера
+{
+	//Создаем буферное хранилище
+	int* data = new int[m_length + 1];
+
+	//Копируем в буферное хранилище все значения контейнера
+	for (int index = 1; index < m_length; ++index)
+	{
+		data[index] = m_data[index];
 	}
 
-	return &copyArray;
+	data[0] = value; //Вставляем в  начало буферного хранилища новое значение
+
+	//Отчищяем хранилище
+	delete[] m_data;
+
+	m_data = data; //Присваиваем контейнеру новый массив с удаленным элементом
+	++m_length; //Устанавливаем новую длину контейнера
 }
 
-//Вставляем новый элемент в определеное место
-int IntegerArray::getItem(int index)
-{
-	return m_data[index];
-}
-
-//Вставить новый элемент в конец контейнера
-void IntegerArray::addItem(int value)
+void IntegerArray::insertEndItem(int value) //Вставить новый элемент в конец контейнера
 {
 	//Создаем буферное хранилище
 	int* data = new int[m_length + 1];
@@ -47,9 +79,13 @@ void IntegerArray::addItem(int value)
 	++m_length; //Устанавливаем новую длину контейнера
 }
 
-//Вставляем новый элемент в определеное место
-void IntegerArray::insertItem(int value, int index)
+void IntegerArray::insertItem(int index, int value) //Вставляем новый элемент в определеное место
 {
+	if (index < 0 || index > m_length)
+	{
+		throw BadRange();
+	}
+
 	//Создаем буферное хранилище
 	int* data = new int[m_length + 1];
 
@@ -84,13 +120,11 @@ int IntegerArray::findItem(int itemValue)
 	return -1;
 }
 
-//Удаление элемента с контейнера
-void IntegerArray::deleteItem(int indexDelItem)
+void IntegerArray::removeItem(int indexDelItem) //Удаление элемента с контейнера
 {
-	//Если индекс отрицательный или выходит за размеры контейнера
-	if ((indexDelItem < 0) || (indexDelItem >= m_length))
+	if (indexDelItem < 0 || indexDelItem > m_length)
 	{
-		std::cout << "Индекса: " << indexDelItem << " не сущевствует в контейнере" << std::endl;
+		throw BadRange();
 	}
 	else
 	{
@@ -112,13 +146,10 @@ void IntegerArray::deleteItem(int indexDelItem)
 
 		m_data = data; //Присваиваем контейнеру новый массив с удаленным элементом
 		m_length--; //Уменьшаем длину контейнера
-		std::cout << "deleteItem" << std::endl;
-		printInfo(m_length);
 	}
 }
 
-//Отчищаем контейнер
-void IntegerArray::eraseCont() 
+void IntegerArray::eraseCont() //Отчищаем контейнер
 {
 	delete[] m_data;
 
@@ -126,46 +157,50 @@ void IntegerArray::eraseCont()
 	m_length = 0;
 }
 
-void IntegerArray::changeSize(int newLength)
+void IntegerArray::changeSize(int newLength) //Изменить размер контейнера
 {
-	//Если массив уже имеет нужную длину, мы закончили
-	if (newLength == m_length)
-	{
-		return;
-	}
-
-	//Если мы изменяем размер пустого массива, просто отчищяем его
 	if (newLength <= 0)
 	{
-		IntegerArray::eraseCont();
-		return;
+		throw BadLength();
 	}
-
-	//Создаем буферное хранилище
-	int* data{ new int[newLength] };
-
-	if (m_length > 0)
+	else
 	{
-		int elementsToCopy;
-
-		//Выясняем сколько элементов в старом хранилище необходимо перенести в новое
-		if (newLength > m_length) { elementsToCopy = m_length;	}
-		else { elementsToCopy = newLength; }
-
-		//Переносим значения из старого в хранилища в буферное
-		for (int index = 0; index < elementsToCopy; ++index)
+		//Если массив уже имеет нужную длину, мы закончили
+		if (newLength == m_length)
 		{
-			data[index] = m_data[index];
+			return;
 		}
+
+		//Если мы изменяем размер пустого массива, просто отчищяем его
+		if (newLength <= 0)
+		{
+			IntegerArray::eraseCont();
+			return;
+		}
+
+		//Создаем буферное хранилище
+		int* data{ new int[newLength] };
+
+		if (m_length > 0)
+		{
+			int elementsToCopy;
+
+			//Выясняем сколько элементов в старом хранилище необходимо перенести в новое
+			if (newLength > m_length) { elementsToCopy = m_length; }
+			else { elementsToCopy = newLength; }
+
+			//Переносим значения из старого в хранилища в буферное
+			for (int index = 0; index < elementsToCopy; ++index)
+			{
+				data[index] = m_data[index];
+			}
+		}
+
+		//Отчищяем хранилище
+		delete[] m_data;
+
+		m_data = data;	//Присваиваем контейнеру новый массив с удаленным элементом
+		m_length = newLength; //Устанавливаем новую длину контейнера
 	}
-
-	//Отчищяем хранилище
-	delete[] m_data;
-
-	m_data = data;	//Присваиваем контейнеру новый массив с удаленным элементом
-	m_length = newLength; //Устанавливаем новую длину контейнера
-
-	std::cout << "changeSize" << std::endl;
-	printInfo(newLength);
 }
 

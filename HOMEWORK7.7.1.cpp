@@ -7,15 +7,39 @@ int main()
 {
     setlocale(LC_ALL, "rus");
 
-	IntegerArray array(4);
-	//array.insertItem(11, 5);
-	//array.printInfo(array.getLength());
-	IntegerArray* b = array.copyContain();
-	cout << b->getItem(0);
+	try
+	{
+		IntegerArray array(5); //Создаем контейнер размером 5(для проверки исключения можно задат отрицателный параметр или 0)
+		for (int i = 0; i < array.getLength(); i++)
+		{
+			array.setItem(i, rand()); //Заполняем случайными числами
+		}
 
-	//cout << &(array.copyContain());
+		array.changeSize(4); // Уменьшаем размер контейнера с 5 до 4 и теряем одно значение(5 элемент)
+		array.changeSize(6); // Увеличиваем размер контейнера с 4 до 6(два новых элемента будут заполнены мусором)
+		array.setItem(4, 10); //Заполняем новые элементы значениями
+		array.setItem(5, rand());
 
-    //cout << array.getLength();
-	//cout << array.findItem(41);
+		array.insertStartItem(1000); //Вставляем элемент в начало контейнера со значением 1000
+		array.insertEndItem(-1000); //Вставляем элемент в конец контейнера со значением -1000
+		array.insertItem(4, 5); //Вставляем элемент третьим сначало со значением 5
+
+		array.removeItem(3); //Удаляем 3 элемент из контейнера
+
+		cout << "Элемент со значением 5 имеет индекс(" << array.findItem(5) << ")" << endl ;
+
+		array.printItems(); //Вывод элементов контейнера
+
+		/*Не совсем понятно что имелось под функцией копирования, и примеров в лекции не было
+			У меня реализовано копирование, как создание отдельного хранилищя, который копирует размер оригинального,
+			а так же все его значения элементов. Но при этом является отдельным объектом
+		*/
+		IntegerArray* arrayCopy = array.copyContain();
+		arrayCopy->printItems();
+	}
+	catch (exception& e)
+	{
+		cout << e.what();
+	}
 
 }
